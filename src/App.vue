@@ -1,21 +1,34 @@
 <template lang="pug">
   #app
-    | Я родился
-    product
+    template(v-for="group in groups")
+      group(:group="group")
+    //- product
 </template>
 
 <script>
-import Product from '@/components/product';
+// import Product from '@/components/product';
 
 export default {
   name: 'App',
   components: {
-    Product,
+    // Product,
   },
-  computed: {
+  data() {
+    return {
+      groups: [
+        {
+          name: 'Группа 1',
+          count: 4,
+        },
+        {
+          name: 'Группа 2',
+          count: 4,
+        },
+      ],
+    };
   },
-  methods: {
-  },
+  computed: {},
+  methods: {},
 };
 </script>
 
