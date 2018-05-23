@@ -138,11 +138,9 @@ export default {
       this[address] = restrainMinMax(this[address] || valid, min, max);
     },
     createTables() {
-      console.log('createTables');
-      const rows = Math.max(this.group1count, this.group2count);
       const cols = this.metricScales.length;
-      this.matrix1 = this.createTable(rows, cols);
-      this.matrix2 = this.createTable(rows, cols);
+      this.matrix1 = this.createTable(this.group1count, cols);
+      this.matrix2 = this.createTable(this.group2count, cols);
     },
     createTable(rows, cols) {
       const table = [];
