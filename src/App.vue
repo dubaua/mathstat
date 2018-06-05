@@ -47,38 +47,39 @@
         | Добавить {{scalesCount}} {{scalesPlural}}
     p
       button(@click="createTables") Создать таблицы
-    template(v-if="matrix1.length || matrix2.length")
+    template(v-if="matrixX.length || matrixY.length")
       h2 Таблицы
       table
         tr
           th
           th(v-for="(scale, i) in metricScales")
             | {{scale.title || 'Шкала '+(i+1)}}
-        tr(v-for="(row, r) in matrix1")
+        tr(v-for="(row, r) in matrixX")
           td
             | {{ group1title || 'Название группы 1'}}
           td(v-for="(col, c) in row")
-            input(v-model="col.v", @paste="handlePasteInTable($event, r, c, 'matrix1')")
-      table
-        tr
-          th
-          th(v-for="(scale, i) in metricScales")
-            | {{scale.title || 'Шкала '+(i+1)}}
-        tr(v-for="(row, r) in matrix2")
+            input(v-model.number="col.v", @paste="handlePasteInTable($event, r, c, 'matrixX')")
+        tr(v-for="(row, r) in matrixY")
           td
             | {{ group2title || 'Название группы 1'}}
           td(v-for="(col, c) in row")
-            input(v-model="col.v", @paste="handlePasteInTable($event, r, c, 'matrix2')")
+            input(v-model.number="col.v", @paste="handlePasteInTable($event, r, c, 'matrixY')")
+        tr(v-if="results.length")
+          td U-критерий Манна-Уитни
+          td(v-for="result in results") {{result.U}}
+        tr(v-if="results.length")
+          td p-значение
+          td(v-for="result in results") {{result.p}}
+    p
+      button(@click="test") Рассчитать
 </template>
 
 <script>
 import { declOfNum, restrainMinMax } from '@/utils';
+import mannWhitneyUTest from '@/utils/mannWhitneyUTest';
 /* eslint-disable no-console, no-plusplus */
 export default {
   name: 'App',
-  components: {
-    // Product,
-  },
   data() {
     return {
       group1title: '',
@@ -91,8 +92,9 @@ export default {
           title: '',
         },
       ],
-      matrix1: [],
-      matrix2: [],
+      matrixX: [],
+      matrixY: [],
+      results: [],
     };
   },
   computed: {
@@ -138,9 +140,10 @@ export default {
       this[address] = restrainMinMax(this[address] || valid, min, max);
     },
     createTables() {
+      const rows = Math.max(this.group1count, this.group2count);
       const cols = this.metricScales.length;
-      this.matrix1 = this.createTable(this.group1count, cols);
-      this.matrix2 = this.createTable(this.group2count, cols);
+      this.matrixX = this.createTable(rows, cols);
+      this.matrixY = this.createTable(rows, cols);
     },
     createTable(rows, cols) {
       const table = [];
@@ -150,12 +153,33 @@ export default {
 
         for (let c = 0; c < cols; c++) {
           row.push({
-            v: '',
+            v: 0,
           });
         }
         table.push(row);
       }
       return table;
+    },
+    test() {
+      const scales = this.extractScales();
+      for (let i = 0; i < scales.length; i++) {
+        this.results.push(mannWhitneyUTest(scales[i].x, scales[i].y));
+      }
+    },
+    extractScales() {
+      const scales = [];
+      const rows = Math.max(this.group1count, this.group2count);
+      const cols = this.metricScales.length;
+      for (let c = 0; c < cols; c++) {
+        const x = [];
+        const y = [];
+        for (let r = 0; r < rows; r++) {
+          x.push(this.matrixX[r][c].v);
+          y.push(this.matrixY[r][c].v);
+        }
+        scales.push({ x, y });
+      }
+      return scales;
     },
   },
 };
