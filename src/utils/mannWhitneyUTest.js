@@ -128,7 +128,7 @@ const statistic = (x, y) => {
       if (ranked[i].val === ranked[i - 1].val) {
         nt++;
       } else if (nt > 1) {
-        t += nr ** 3 - nt;
+        t += nt ** 3 - nt;
         nt = 1;
       }
     }
@@ -178,7 +178,7 @@ export default function (x, y, alt = 'two-sided', corr = true) {
       break;
   }
 
-  // compute p-value using CDF of standard normal
+  // compute p-value using CDF (cumulative distribution function) of standard normal
   const p = dnorm(-z, 0, 1) * f;
 
   return { U: u.small, p };
